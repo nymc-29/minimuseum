@@ -2,10 +2,49 @@
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Mini Museum</title>
+    <style>
+        /* 화면 전체를 검은색 배경으로 설정 */
+        html, body {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            background-color: #000000;
+            color: #ffffff;
+            font-family: sans-serif;
+            overflow: hidden; /* 스크롤바 숨김 */
+        }
+
+        /* 좌측 하단에 고정될 글자 상자 설정 */
+        .bottom-left-text {
+            position: absolute;
+            bottom: 30px;    /* 바닥에서 30픽셀 띄움 */
+            left: 30px;      /* 왼쪽에서 30픽셀 띄움 */
+            text-align: left; /* 글자 왼쪽 정렬 */
+        }
+
+        /* 큰 제목 스타일 */
+        .bottom-left-text h1 {
+            margin: 0 0 10px 0;
+            font-size: 24px;
+        }
+
+        /* 작은 본문 스타일 */
+        .bottom-left-text p {
+            margin: 0;
+            font-size: 16px;
+            color: #aaaaaa; /* 약간 연한 회색 글자 */
+        }
+    </style>
 </head>
 <body>
-    <h1>🎨 미니 뮤지엄에 오신 것을 환영합니다!</h1>
-    <p>나만의 멋진 웹사이트 공간입니다.</p>
+
+    <div class="bottom-left-text">
+        <h1>미니 뮤지엄</h1>
+        <p>웹사이트 공간입니다.</p>
+    </div>
+
 </body>
 </html>
