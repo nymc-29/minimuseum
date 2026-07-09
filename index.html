@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Mini Museum</title>
     <style>
-        /* 화면 전체를 검은색 배경으로 설정 */
+        /* 기본 상태: 완전한 검은색 배경 */
         html, body {
             margin: 0;
             padding: 0;
@@ -14,37 +14,209 @@
             background-color: #000000;
             color: #ffffff;
             font-family: sans-serif;
-            overflow: hidden; /* 스크롤바 숨김 */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+            
+            /* 💡 첫 화면 넘어갈 때 배경이 가속도(cubic-bezier)를 그리며 바뀜 */
+            transition: background 1.2s cubic-bezier(0.7, 0, 0.3, 1), background-color 1.2s cubic-bezier(0.7, 0, 0.3, 1);
         }
 
-        /* 좌측 하단에 고정될 글자 상자 설정 */
-        .bottom-left-text {
+        /* 클릭 시 바뀔 새로운 배경 스타일 */
+        body.bg-changed {
+            background: radial-gradient(circle, #22252c 0%, #0b0c10 70%, #000000 100%);
+        }
+
+        /* 첫 안내 문구 */
+        #intro-message {
             position: absolute;
-            bottom: 30px;    /* 바닥에서 30픽셀 띄움 */
-            left: 30px;      /* 왼쪽에서 30픽셀 띄움 */
-            text-align: left; /* 글자 왼쪽 정렬 */
+            font-size: 18px;
+            color: #888888;
+            letter-spacing: 2px;
+            animation: blink 2s infinite;
+            z-index: 20;
+            user-select: none;
+            transition: opacity 0.8s cubic-bezier(0.7, 0, 0.3, 1), transform 0.8s cubic-bezier(0.7, 0, 0.3, 1);
         }
 
-        /* 큰 제목 스타일 */
-        .bottom-left-text h1 {
-            margin: 0 0 10px 0;
-            font-size: 24px;
+        @keyframes blink {
+            0%, 100% { opacity: 0.3; }
+            50% { opacity: 1; }
         }
 
-        /* 작은 본문 스타일 */
-        .bottom-left-text p {
-            margin: 0;
-            font-size: 16px;
-            color: #aaaaaa; /* 약간 연한 회색 글자 */
+        /* 슬라이더 전체 상자 */
+        .slider-container {
+            position: relative;
+            width: 80%;
+            max-width: 600px;
+            height: auto;
+            text-align: center;
+            opacity: 0;
+            transform: scale(0.8); /* 처음에 약간 작게 시작 */
+            visibility: hidden;
+            transition: opacity 1.2s cubic-bezier(0.34, 1.56, 0.64, 1), transform 1.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+            z-index: 10;
+        }
+
+        /* 배경이 바뀌면 슬라이더가 튕기듯 가속하며 튀어나옴 */
+        body.bg-changed .slider-container {
+            opacity: 1;
+            transform: scale(1);
+            visibility: visible;
+        }
+
+        /* 💡 이미지 기본 스타일 및 가속도 전환 효과 설정 */
+        .slide-img {
+            width: 100%;
+            height: auto;
+            max-height: 70vh;
+            object-fit: contain;
+            border-radius: 10px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.8);
+            
+            /* 기본적으로 화면 밖 오른쪽에 숨겨둠 */
+            display: none;
+            opacity: 0;
+            transform: translateX(50px) scale(0.9);
+            
+            /* 그림이 바뀔 때 0.6초 동안 가속도가 붙으며 움직임 */
+            transition: opacity 0.6s cubic-bezier(0.76, 0, 0.24, 1), transform 0.6s cubic-bezier(0.76, 0, 0.24, 1);
+        }
+
+        /* 현재 보여줄 이미지 (가속하며 정위치로 탁 안착) */
+        .slide-img.active {
+            display: block;
+            /* 자바스크립트로 약간의 시간차(Next Tick)를 주어 애니메이션 작동 시킴 */
+        }
+        
+        /* 애니메이션 궤도용 클래스 */
+        .slide-img.fade-in {
+            opacity: 1;
+            transform: translateX(0) scale(1);
+        }
+
+        .arrow-btn {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            background-color: rgba(255, 255, 255, 0.15);
+            color: white;
+            border: none;
+            font-size: 30px;
+            padding: 10px 15px;
+            cursor: pointer;
+            border-radius: 5px;
+            transition: background 0.3s;
+            user-select: none;
+            z-index: 30;
+        }
+
+        .arrow-btn:hover { background-color: rgba(255, 255, 255, 0.4); }
+        .prev-btn { left: -60px; }
+        .next-btn { right: -60px; }
+
+        .museum-title {
+            margin-top: 20px;
+            font-size: 20px;
+            letter-spacing: 1px;
         }
     </style>
 </head>
-<body>
+<body onclick="activateMuseum()" onkeydown="activateMuseum()">
 
-    <div class="bottom-left-text">
-        <h1>Minimum</h1>
-        <p>웹사이트 공간입니다.</p>
+    <div id="intro-message">화면을 클릭하여 입장하세요.</div>
+
+    <div class="slider-container">
+        <button class="arrow-btn prev-btn" onclick="event.stopPropagation(); changeSlide(-1)">&lt;</button>
+
+        <img src="https://images.unsplash.com/photo-1579783902614-a3fb3927b6a5?w=600" alt="작품 1" class="slide-img active fade-in">
+        <img src="https://images.unsplash.com/photo-1580136579312-94651dfd596d?w=600" alt="작품 2" class="slide-img">
+        <img src="https://images.unsplash.com/photo-1547891654-e66ed7edd96c?w=600" alt="작품 3" class="slide-img">
+
+        <button class="arrow-btn next-btn" onclick="event.stopPropagation(); changeSlide(1)">&gt;</button>
+
+        <div class="museum-title">🎨 미니 뮤지엄 전시회</div>
     </div>
+
+    <audio id="bgm1" src="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3" loop></audio>
+    <audio id="bgm2" src="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-2.mp3" loop></audio>
+    <audio id="bgm3" src="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-3.mp3" loop></audio>
+
+    <script>
+        let currentIdx = 0;
+        let isActivated = false;
+        const slides = document.querySelectorAll('.slide-img');
+        
+        const playlist = [
+            document.getElementById('bgm1'),
+            document.getElementById('bgm2'),
+            document.getElementById('bgm3')
+        ];
+
+        function activateMuseum() {
+            if (isActivated) return;
+            isActivated = true;
+
+            // 가속도 붙으며 글씨 위로 사라짐
+            const intro = document.getElementById('intro-message');
+            intro.style.opacity = '0';
+            intro.style.transform = 'translateY(-20px)';
+            setTimeout(() => intro.style.display = 'none', 800);
+
+            document.body.classList.add('bg-changed');
+
+            if (playlist[currentIdx]) {
+                playlist[currentIdx].play().catch(err => console.log(err));
+            }
+        }
+
+        function stopAllAudio() {
+            playlist.forEach(audio => {
+                if (audio) {
+                    audio.pause();
+                    audio.currentTime = 0;
+                }
+            });
+        }
+
+        function changeSlide(direction) {
+            if (!isActivated) return;
+
+            // 1. 기존 이미지 페이드아웃 및 숨김
+            const prevSlide = slides[currentIdx];
+            prevSlide.classList.remove('fade-in');
+            stopAllAudio();
+
+            setTimeout(() => {
+                prevSlide.classList.remove('active');
+                
+                // 2. 인덱스 계산
+                currentIdx += direction;
+                if (currentIdx < 0) currentIdx = slides.length - 1;
+                else if (currentIdx >= slides.length) currentIdx = 0;
+
+                // 3. 새 이미지 대기 위치 조정 (왼쪽/오른쪽에서 날아오도록 연출)
+                const nextSlide = slides[currentIdx];
+                nextSlide.style.transition = 'none'; // 순간이동 할 때는 애니메이션 끔
+                nextSlide.style.transform = direction > 0 
+                    ? 'translateX(60px) scale(0.95)'  // 다음 그림은 오른쪽에서
+                    : 'translateX(-60px) scale(0.95)'; // 이전 그림은 왼쪽에서
+                nextSlide.style.opacity = '0';
+                nextSlide.classList.add('active');
+
+                // 4. 가속도 엔진을 켜며 정위치로 안착시킴
+                setTimeout(() => {
+                    nextSlide.style.transition = ''; // 원래 CSS 가속도 애니메이션 켬
+                    nextSlide.classList.add('fade-in');
+                }, 20); // 아주 미세한 딜레이를 주어 브라우저가 인지하게 함
+
+                if (playlist[currentIdx]) {
+                    playlist[currentIdx].play().catch(err => console.log(err));
+                }
+            }, 300); // 이전 그림이 반쯤 사라졌을 때 교체
+        }
+    </script>
 
 </body>
 </html>
