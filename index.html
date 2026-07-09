@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Mini Museum</title>
     <style>
-        /* 기본 배경 */
+        /* 기본 배경 (입장 전: 어두운 톤) */
         html, body {
             margin: 0;
             padding: 0;
@@ -19,13 +19,15 @@
             align-items: center;
             overflow: hidden;
             
-            /* 가속도 */
-            transition: background 1.2s cubic-bezier(0.7, 0, 0.3, 1), background-color 1.2s cubic-bezier(0.7, 0, 0.3, 1);
+            /* 배경 및 글자색 가속도 전환 효과 (배경색이 변할 때 1.2초 동안 부드럽게 가속) */
+            transition: background 1.2s cubic-bezier(0.7, 0, 0.3, 1), 
+                        color 1.2s cubic-bezier(0.7, 0, 0.3, 1);
         }
 
-        /* 클릭 시 바뀔 새로운 배경 스타일 */
+        /* 💡 입장 후에는 자바스크립트가 body에 직접 개별 그라데이션 스타일을 꽂아줄 예정이므로, 
+           body.bg-changed 스타일은 삭제하거나 비워둡니다. 기본 글자색만 지정합니다. */
         body.bg-changed {
-            background: radial-gradient(circle, #22252c 0%, #0b0c10 70%, #000000 100%);
+            color: #222222; 
         }
 
         /* 첫 안내 문구 */
@@ -45,82 +47,100 @@
             50% { opacity: 1; }
         }
 
-        /* 슬라이더 전체 상자 */
+        /* 메인 박스 레이아웃 구조 */
         .slider-container {
             position: relative;
-            width: 80%;
-            max-width: 600px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 90%;
+            max-width: 900px;
             height: auto;
-            text-align: center;
             opacity: 0;
-            transform: scale(0.8); /* 처음에 약간 작게 시작 */
+            transform: scale(0.8);
             visibility: hidden;
             transition: opacity 1.2s cubic-bezier(0.34, 1.56, 0.64, 1), transform 1.2s cubic-bezier(0.34, 1.56, 0.64, 1);
             z-index: 10;
         }
 
-        /* 배경 슬라이더 */
         body.bg-changed .slider-container {
             opacity: 1;
             transform: scale(1);
             visibility: visible;
         }
 
-        /* 가속도 전환 효과 설정 */
-        .slide-img {
+        /* 이미지와 카드 해설칸 배치 영역 */
+        .museum-content {
+            display: flex;
+            align-items: flex-end;
+            justify-content: center;
+            gap: 40px;
             width: 100%;
+        }
+
+        /* 가속도 이미지 설정 */
+        .slide-img {
+            width: 60%;
             height: auto;
-            max-height: 70vh;
+            max-height: 65vh;
             object-fit: contain;
-            border-radius: 10px;
-            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.8);
+            border-radius: 8px;
+            box-shadow: 0 15px 50px rgba(0, 0, 0, 0.12);
             
-            /* 기본적으로 화면 밖 오른쪽에 숨겨둠 */
             display: none;
             opacity: 0;
-            transform: translateX(50px) scale(0.9);
-            
-            /* 그림이 바뀔 때 0.6초 동안 가속도가 붙으며 움직임 */
+            transform: translateX(40px) scale(0.95);
             transition: opacity 0.6s cubic-bezier(0.76, 0, 0.24, 1), transform 0.6s cubic-bezier(0.76, 0, 0.24, 1);
         }
 
-        /* 현재 보여줄 이미지 (가속하며 정위치로 탁 안착) */
-        .slide-img.active {
-            display: block;
-            /* 자바스크립트로 약간의 시간차(Next Tick)를 주어 애니메이션 작동 시킴 */
-        }
-        
-        /* 애니메이션 궤도용 클래스 */
-        .slide-img.fade-in {
-            opacity: 1;
-            transform: translateX(0) scale(1);
+        .slide-img.active { display: block; }
+        .slide-img.fade-in { opacity: 1; transform: translateX(0) scale(1); }
+
+        /* 카드식 해설칸 스타일 */
+        .museum-card {
+            width: 35%;
+            background-color: #ffffff;
+            padding: 24px;
+            border-radius: 6px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+            border-left: 4px solid #444444;
+            text-align: left;
+            
+            display: none;
+            opacity: 0;
+            transform: translateY(15px);
+            transition: opacity 0.5s cubic-bezier(0.25, 1, 0.5, 1), transform 0.5s cubic-bezier(0.25, 1, 0.5, 1);
         }
 
+        .museum-card.active { display: block; }
+        .museum-card.fade-in { opacity: 1; transform: translateY(0); }
+
+        .card-row-origin { font-size: 18px; font-weight: bold; color: #111111; margin-bottom: 4px; }
+        .card-row-translation { font-size: 15px; color: #555555; margin-bottom: 12px; border-bottom: 1px dashed #dddddd; padding-bottom: 8px; }
+
+        /* 화살표 버튼 스타일 */
         .arrow-btn {
             position: absolute;
-            top: 50%;
+            top: 45%;
             transform: translateY(-50%);
-            background-color: rgba(255, 255, 255, 0.15);
-            color: white;
+            background-color: rgba(0, 0, 0, 0.05);
+            color: #222222;
             border: none;
             font-size: 30px;
-            padding: 10px 15px;
+            padding: 12px 18px;
             cursor: pointer;
-            border-radius: 5px;
-            transition: background 0.3s;
+            border-radius: 50%;
+            transition: background 0.3s, color 0.3s;
             user-select: none;
             z-index: 30;
         }
 
-        .arrow-btn:hover { background-color: rgba(255, 255, 255, 0.4); }
-        .prev-btn { left: -60px; }
-        .next-btn { right: -60px; }
-
-        .museum-title {
-            margin-top: 20px;
-            font-size: 20px;
-            letter-spacing: 1px;
+        .arrow-btn:hover { 
+            background-color: rgba(0, 0, 0, 0.8); 
+            color: #ffffff;
         }
+        .prev-btn { left: -70px; }
+        .next-btn { right: -70px; }
     </style>
 </head>
 <body onclick="activateMuseum()" onkeydown="activateMuseum()">
@@ -130,13 +150,26 @@
     <div class="slider-container">
         <button class="arrow-btn prev-btn" onclick="event.stopPropagation(); changeSlide(-1)">&lt;</button>
 
-        <img src="https://images.unsplash.com/photo-1579783902614-a3fb3927b6a5?w=600" alt="작품 1" class="slide-img active fade-in">
-        <img src="https://images.unsplash.com/photo-1580136579312-94651dfd596d?w=600" alt="작품 2" class="slide-img">
-        <img src="https://images.unsplash.com/photo-1547891654-e66ed7edd96c?w=600" alt="작품 3" class="slide-img">
+        <div class="museum-content">
+            <img src="https://images.unsplash.com/photo-1579783902614-a3fb3927b6a5?w=600" alt="작품 1" class="slide-img active fade-in">
+            <img src="https://images.unsplash.com/photo-1580136579312-94651dfd596d?w=600" alt="작품 2" class="slide-img">
+            <img src="https://images.unsplash.com/photo-1547891654-e66ed7edd96c?w=600" alt="작품 3" class="slide-img">
+
+            <div class="museum-card active fade-in">
+                <div class="card-row-origin">The Flowery Stage - Artist A</div>
+                <div class="card-row-translation">꽃이 피는 무대 - 화가 A</div>
+            </div>
+            <div class="museum-card">
+                <div class="card-row-origin">Deep Ocean Meditation - Artist B</div>
+                <div class="card-row-translation">깊은 바다의 명상 - 화가 B</div>
+            </div>
+            <div class="museum-card">
+                <div class="card-row-origin">Abstract Harmony - Artist C</div>
+                <div class="card-row-translation">추상적인 조화 - 화가 C</div>
+            </div>
+        </div>
 
         <button class="arrow-btn next-btn" onclick="event.stopPropagation(); changeSlide(1)">&gt;</button>
-
-        <div class="museum-title"> 가제 </div>
     </div>
 
     <audio id="bgm1" src="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3" loop></audio>
@@ -147,6 +180,7 @@
         let currentIdx = 0;
         let isActivated = false;
         const slides = document.querySelectorAll('.slide-img');
+        const cards = document.querySelectorAll('.museum-card');
         
         const playlist = [
             document.getElementById('bgm1'),
@@ -154,17 +188,30 @@
             document.getElementById('bgm3')
         ];
 
+        // 💡 [핵심 추가] 각 그림 번호(0, 1, 2)에 맞는 그라데이션 배경 배열
+        // 그림 분위기에 맞는 색상 코드로 자유롭게 변경 가능합니다.
+        const backgroundStyles = [
+            "radial-gradient(circle, #fcfbf9 0%, #eae7e2 70%, #dcd8d0 100%)", // 1번 그림: 웜 화이트
+            "radial-gradient(circle, #f0f4f8 0%, #d9e2ec 70%, #bcccdc 100%)", // 2번 그림: 은은한 블루 화이트
+            "radial-gradient(circle, #faf5ff 0%, #f3e8ff 70%, #e9d5ff 100%)"  // 3번 그림: 연한 연보라 톤
+        ];
+
+        // 배경을 부드럽게 변경해 주는 함수
+        function updateBackground() {
+            document.body.style.background = backgroundStyles[currentIdx];
+        }
+
         function activateMuseum() {
             if (isActivated) return;
             isActivated = true;
 
-            // 가속도 붙으며 글씨 위로 사라짐
             const intro = document.getElementById('intro-message');
             intro.style.opacity = '0';
             intro.style.transform = 'translateY(-20px)';
             setTimeout(() => intro.style.display = 'none', 800);
 
             document.body.classList.add('bg-changed');
+            updateBackground(); // 💡 입장 시 1번 그림의 배경 설정
 
             if (playlist[currentIdx]) {
                 playlist[currentIdx].play().catch(err => console.log(err));
@@ -183,38 +230,55 @@
         function changeSlide(direction) {
             if (!isActivated) return;
 
-            // 1. 기존 이미지 페이드아웃 및 숨김
             const prevSlide = slides[currentIdx];
+            const prevCard = cards[currentIdx];
+            
             prevSlide.classList.remove('fade-in');
+            if(prevCard) prevCard.classList.remove('fade-in');
             stopAllAudio();
 
             setTimeout(() => {
                 prevSlide.classList.remove('active');
+                if(prevCard) prevCard.classList.remove('active');
                 
-                // 2. 인덱스 계산
                 currentIdx += direction;
                 if (currentIdx < 0) currentIdx = slides.length - 1;
                 else if (currentIdx >= slides.length) currentIdx = 0;
 
-                // 3. 새 이미지 대기 위치 조정 (왼쪽/오른쪽에서 날아오도록 연출)
                 const nextSlide = slides[currentIdx];
-                nextSlide.style.transition = 'none'; // 순간이동 할 때는 애니메이션 끔
+                const nextCard = cards[currentIdx];
+                
+                // 💡 그림이 바뀌는 타이밍에 배경색도 부드럽게 세팅
+                updateBackground();
+
+                nextSlide.style.transition = 'none';
                 nextSlide.style.transform = direction > 0 
-                    ? 'translateX(60px) scale(0.95)'  // 다음 그림은 오른쪽에서
-                    : 'translateX(-60px) scale(0.95)'; // 이전 그림은 왼쪽에서
+                    ? 'translateX(40px) scale(0.95)'  
+                    : 'translateX(-40px) scale(0.95)'; 
                 nextSlide.style.opacity = '0';
                 nextSlide.classList.add('active');
 
-                // 4. 가속도 엔진을 켜며 정위치로 안착시킴
+                if(nextCard) {
+                    nextCard.style.transition = 'none';
+                    nextCard.style.transform = 'translateY(15px)';
+                    nextCard.style.opacity = '0';
+                    nextCard.classList.add('active');
+                }
+
                 setTimeout(() => {
-                    nextSlide.style.transition = ''; // 원래 CSS 가속도 애니메이션 켬
+                    nextSlide.style.transition = ''; 
                     nextSlide.classList.add('fade-in');
-                }, 20); // 아주 미세한 딜레이를 주어 브라우저가 인지하게 함
+                    
+                    if(nextCard) {
+                        nextCard.style.transition = '';
+                        nextCard.classList.add('fade-in');
+                    }
+                }, 20); 
 
                 if (playlist[currentIdx]) {
                     playlist[currentIdx].play().catch(err => console.log(err));
                 }
-            }, 300); // 이전 그림이 반쯤 사라졌을 때 교체
+            }, 300); 
         }
     </script>
 
