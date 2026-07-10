@@ -170,11 +170,6 @@
         </div>
 
         <button class="arrow-btn next-btn" onclick="event.stopPropagation(); changeSlide(1)">&gt;</button>
-    </div>
-
-    <audio id="bgm1" src="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3" loop></audio>
-    <audio id="bgm2" src="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-2.mp3" loop></audio>
-    <audio id="bgm3" src="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-3.mp3" loop></audio>
 
     <script>
         let currentIdx = 0;
@@ -212,20 +207,6 @@
 
             document.body.classList.add('bg-changed');
             updateBackground(); // 💡 입장 시 1번 그림의 배경 설정
-
-            if (playlist[currentIdx]) {
-                playlist[currentIdx].play().catch(err => console.log(err));
-            }
-        }
-
-        function stopAllAudio() {
-            playlist.forEach(audio => {
-                if (audio) {
-                    audio.pause();
-                    audio.currentTime = 0;
-                }
-            });
-        }
 
         function changeSlide(direction) {
             if (!isActivated) return;
