@@ -24,7 +24,28 @@
         }
 
         body.bg-changed {
+            background-color: #ffffff; /* 갤러리 배경색 흰색으로 통일 */
             color: #222222; 
+        }
+
+        /* 좌측 하단 로고 스타일 */
+        #logo-text {
+            position: absolute;
+            left: 30px;
+            bottom: 30px;
+            font-size: 24px;
+            font-weight: bold;
+            line-height: 1.2;
+            letter-spacing: 1px;
+            z-index: 25;
+            user-select: none;
+            /* 배경이 바뀔 때 글자색도 부드럽게 전환 */
+            color: #ffffff;
+            transition: color 1.2s cubic-bezier(0.7, 0, 0.3, 1);
+        }
+
+        body.bg-changed #logo-text {
+            color: #111111; /* 입장 후에는 어두운 색으로 변경 */
         }
 
         /* 첫 안내 문구 */
@@ -154,6 +175,8 @@
 </head>
 <body onclick="activateMuseum()" onkeydown="activateMuseum()">
 
+    <div id="logo-text">Mini<br>Museum</div>
+
     <div id="intro-message">화면을 클릭하여 입장하세요.</div>
 
     <div class="slider-container">
@@ -198,18 +221,6 @@
         const slides = document.querySelectorAll('.slide-img');
         const cards = document.querySelectorAll('.museum-card');
 
-        const backgroundStyles = [
-            "radial-gradient(circle, #fcfbf9 0%, #eae7e2 70%, #dcd8d0 100%)", 
-            "radial-gradient(circle, #fcfbf9 0%, #eae7e2 70%, #dcd8d0 100%)", 
-            "radial-gradient(circle, #fcfbf9 0%, #eae7e2 70%, #dcd8d0 100%)",
-            "radial-gradient(circle, #fcfbf9 0%, #eae7e2 70%, #dcd8d0 100%)",
-            "radial-gradient(circle, #fcfbf9 0%, #eae7e2 70%, #dcd8d0 100%)"  
-        ];
-
-        function updateBackground() {
-            document.body.style.background = backgroundStyles[currentIdx];
-        }
-
         // 박물관 입장 함수
         function activateMuseum() {
             if (isActivated) return;
@@ -221,7 +232,6 @@
             setTimeout(() => intro.style.display = 'none', 800);
 
             document.body.classList.add('bg-changed');
-            updateBackground(); 
         }
 
         // 슬라이드 전환 함수
@@ -247,9 +257,6 @@
 
                 const nextSlide = slides[currentIdx];
                 const nextCard = cards[currentIdx];
-                
-                // 배경색 업데이트
-                updateBackground();
 
                 // 3. 새 슬라이드 등장 위치 미리 세팅 (방향에 따라 좌/우 설정)
                 nextSlide.style.transform = direction > 0 
